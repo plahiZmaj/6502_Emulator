@@ -1,0 +1,3 @@
+D:\Development\Cmake\cmake-3.27.6-windows-x86_64\bin\cmake.exe -E rm -f CMakeFiles\6502Test.dir/objects.a
+C:\mingw64\bin\ar.exe qc CMakeFiles\6502Test.dir/objects.a @CMakeFiles\6502Test.dir\objects1.rsp
+C:\mingw64\bin\g++.exe -g -Wl,--whole-archive CMakeFiles\6502Test.dir/objects.a -Wl,--no-whole-archive -o 6502Test.exe -Wl,--out-implib,lib6502Test.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\6502Test.dir\linkLibs.rsp

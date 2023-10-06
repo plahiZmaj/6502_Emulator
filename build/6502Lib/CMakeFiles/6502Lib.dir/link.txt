@@ -1,0 +1,2 @@
+C:\mingw64\bin\ar.exe qc lib6502Lib.a CMakeFiles/6502Lib.dir/src/private/main_6502.cpp.obj
+C:\mingw64\bin\ranlib.exe lib6502Lib.a

@@ -1,0 +1,38 @@
+[
+{
+  "directory": "D:/C Projekti/Emulating_6502/build/6502Lib",
+  "command": "C:\\mingw64\\bin\\g++.exe  @CMakeFiles/6502Lib.dir/includes_CXX.rsp -g -o CMakeFiles\\6502Lib.dir\\src\\private\\main_6502.cpp.obj -c \"D:\\C Projekti\\Emulating_6502\\6502\\6502Lib\\src\\private\\main_6502.cpp\"",
+  "file": "D:/C Projekti/Emulating_6502/6502/6502Lib/src/private/main_6502.cpp",
+  "output": "6502Lib/CMakeFiles/6502Lib.dir/src/private/main_6502.cpp.obj"
+},
+{
+  "directory": "D:/C Projekti/Emulating_6502/build/6502Test",
+  "command": "C:\\mingw64\\bin\\g++.exe  @CMakeFiles/6502Test.dir/includes_CXX.rsp -g -o CMakeFiles\\6502Test.dir\\src\\test_6502.cpp.obj -c \"D:\\C Projekti\\Emulating_6502\\6502\\6502Test\\src\\test_6502.cpp\"",
+  "file": "D:/C Projekti/Emulating_6502/6502/6502Test/src/test_6502.cpp",
+  "output": "6502Test/CMakeFiles/6502Test.dir/src/test_6502.cpp.obj"
+},
+{
+  "directory": "D:/C Projekti/Emulating_6502/build/6502Test/googletest/googlemock",
+  "command": "C:\\mingw64\\bin\\g++.exe  @CMakeFiles/gmock.dir/includes_CXX.rsp -g -Wall -Wshadow -Wundef -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=0 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -o CMakeFiles\\gmock.dir\\src\\gmock-all.cc.obj -c \"D:\\C Projekti\\Emulating_6502\\6502\\6502Test\\googletest\\googlemock\\src\\gmock-all.cc\"",
+  "file": "D:/C Projekti/Emulating_6502/6502/6502Test/googletest/googlemock/src/gmock-all.cc",
+  "output": "6502Test/googletest/googlemock/CMakeFiles/gmock.dir/src/gmock-all.cc.obj"
+},
+{
+  "directory": "D:/C Projekti/Emulating_6502/build/6502Test/googletest/googlemock",
+  "command": "C:\\mingw64\\bin\\g++.exe  @CMakeFiles/gmock_main.dir/includes_CXX.rsp -g -Wall -Wshadow -Wundef -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=0 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -o CMakeFiles\\gmock_main.dir\\src\\gmock_main.cc.obj -c \"D:\\C Projekti\\Emulating_6502\\6502\\6502Test\\googletest\\googlemock\\src\\gmock_main.cc\"",
+  "file": "D:/C Projekti/Emulating_6502/6502/6502Test/googletest/googlemock/src/gmock_main.cc",
+  "output": "6502Test/googletest/googlemock/CMakeFiles/gmock_main.dir/src/gmock_main.cc.obj"
+},
+{
+  "directory": "D:/C Projekti/Emulating_6502/build/6502Test/googletest/googletest",
+  "command": "C:\\mingw64\\bin\\g++.exe  @CMakeFiles/gtest.dir/includes_CXX.rsp -g -Wall -Wshadow -Wundef -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=0 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -o CMakeFiles\\gtest.dir\\src\\gtest-all.cc.obj -c \"D:\\C Projekti\\Emulating_6502\\6502\\6502Test\\googletest\\googletest\\src\\gtest-all.cc\"",
+  "file": "D:/C Projekti/Emulating_6502/6502/6502Test/googletest/googletest/src/gtest-all.cc",
+  "output": "6502Test/googletest/googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.obj"
+},
+{
+  "directory": "D:/C Projekti/Emulating_6502/build/6502Test/googletest/googletest",
+  "command": "C:\\mingw64\\bin\\g++.exe  @CMakeFiles/gtest_main.dir/includes_CXX.rsp -g -Wall -Wshadow -Wundef -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=0 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -o CMakeFiles\\gtest_main.dir\\src\\gtest_main.cc.obj -c \"D:\\C Projekti\\Emulating_6502\\6502\\6502Test\\googletest\\googletest\\src\\gtest_main.cc\"",
+  "file": "D:/C Projekti/Emulating_6502/6502/6502Test/googletest/googletest/src/gtest_main.cc",
+  "output": "6502Test/googletest/googletest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.obj"
+}
+]

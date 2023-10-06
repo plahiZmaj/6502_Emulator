@@ -1,0 +1,1 @@
+-I"D:/C Projekti/Emulating_6502/6502/6502Test/googletest/googlemock/include" -I"D:/C Projekti/Emulating_6502/6502/6502Test/googletest/googlemock" -isystem "D:/C Projekti/Emulating_6502/6502/6502Test/googletest/googletest/include" -isystem "D:/C Projekti/Emulating_6502/6502/6502Test/googletest/googletest"
