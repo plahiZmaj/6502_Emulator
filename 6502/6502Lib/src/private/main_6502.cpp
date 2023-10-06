@@ -117,9 +117,9 @@ void CPU::Execute(uint32_t& Cycles, Memory& memory)
 
       case INS_LDA_ZPX:
       {
-        // na naslednji poziciji je shranjen data ki ga je potrebno nalozit v A
+        // na naslednji poziciji je shranjen data kateremu pristejemo vrednost X in nalozimo v A
         Byte ZeroPageAdress = Fetch_Byte(Cycles, memory); 
-        // 3 clock cycle imamo ker rabi prebrat se kar je shranjeno na zero page addressu in ga dat v A
+        // 4 clock cycle imamo ker rabi prebrat kar je shranjeno na zero page addressu in se pristet X
         ZeroPageAdress += X;
 
         // Todo assert ce adress overflowa
