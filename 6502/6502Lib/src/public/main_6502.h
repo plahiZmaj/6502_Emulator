@@ -10,10 +10,10 @@ struct Memory
   // maximalna vrednost nasega memorija
   static constexpr uint32_t MAX_MEM = 1024 * 64;
   // naredimo memory
-  Byte Data[MAX_MEM];
+  uint8_t Data[MAX_MEM];
 
   void Init();
-  Byte operator[](uint32_t Address) const;
+  uint8_t operator[](uint32_t Address) const;
 
 };
 
@@ -22,50 +22,50 @@ struct CPU
 
   // declering registers
   // Program counter, stack pointer
-  Word PC;
-  Word SP;
+  uint16_t PC;
+  uint16_t SP;
 
   // X and Y are GPRS, A -> acumulator
-  Byte X, Y, A;
+  uint8_t X, Y, A;
 
   // procesor status resgister 
   // cpp bit fields ???, lahko usakega posebej dekleriras
-  Byte C : 1;  
-  Byte Z : 1;
-  Byte I : 1;
-  Byte D : 1;
-  Byte B : 1;
-  Byte V : 1;
-  Byte N : 1;
+  uint8_t C : 1;  
+  uint8_t Z : 1;
+  uint8_t I : 1;
+  uint8_t D : 1;
+  uint8_t B : 1;
+  uint8_t V : 1;
+  uint8_t N : 1;
 
   // opcodes
   // instruction load acumulator imidiate mode
   // 1 byte opcode 2 byte je data ki ga hocemo loadat
-  static constexpr Byte INS_LDA_IM = 0xA9;
+  static constexpr uint8_t INS_LDA_IM = 0xA9;
   // instruction load acumulator zero page
   // 1 byte opcode 2 byte je data ki ga hocemo loadat
-  static constexpr Byte INS_LDA_ZP = 0xA5;
+  static constexpr uint8_t INS_LDA_ZP = 0xA5;
   // instruction load acumulator zero page, X
   // 1 byte opcode 2 byte je data ki ga hocemo loadat
-  static constexpr Byte INS_LDA_ZPX = 0xB5;
+  static constexpr uint8_t INS_LDA_ZPX = 0xB5;
   // instruction jump to subrutine absolute, pushes the address (minus one) of the return point on to the stack and then sets the program counter to the target memory address.
   // 1 byte opcode 2 byte je address kamor skocimo
-  static constexpr Byte INS_JSR_ABS = 0x20;
+  static constexpr uint8_t INS_JSR_ABS = 0x20;
 
 
   // CPU functions
 
   void Reset(Memory& memory);
  
-  void Execute(uint32_t& Cycles, Memory& memory);
+  int16_t Execute(int32_t& Cycles, Memory& memory);
 
-  Byte Fetch_Byte(uint32_t& Cycles, Memory& memory);
+  uint8_t Fetch_Byte(int32_t& Cycles, Memory& memory);
 
-  Word Fetch_Word(uint32_t& Cycles, Memory& memory);
+  uint16_t Fetch_Word(int32_t& Cycles, Memory& memory);
 
-  void WriteWord(Word Value, uint32_t Address, uint32_t& Cycles, Memory& memory);
+  void WriteWord(uint16_t Value, uint32_t Address, int32_t& Cycles, Memory& memory);
 
-  Byte Read_Byte(uint32_t& Cycles, uint8_t& ZeroPageAddress, Memory& memory);
+  uint8_t Read_Byte(int32_t& Cycles, uint8_t& ZeroPageAddress, Memory& memory);
 
 
   void LDASetStatus();
