@@ -76,6 +76,15 @@ uint8_t CPU::Read_Byte(int32_t& Cycles, uint8_t& ZeroPageAddress, Memory& memory
   return Data;
 }
 
+uint8_t CPU::Read_Byte_ABS(int32_t& Cycles, uint16_t& Abs_Adress, Memory& memory)
+{
+  // ne inkrimentamo PC ker ne executamo code ampak samo beremo memory
+  uint8_t Data = memory[Abs_Adress];
+  Cycles--;
+
+  return Data;
+}
+
 
 // itak ima access do A zato nerabimo passat notri
 void CPU::LDASetStatus()
@@ -102,8 +111,10 @@ int16_t CPU::Execute(int32_t& Cycles, Memory& memory)
     case INS_LDA_IM:
       {
         // na naslednji poziciji je shranjen data ki ga je potrebno nalozit v A
-        uint8_t Value = Fetch_Byte(Cycles, memory);
-        A = Value;
+        //uint8_t Value = Fetch_Byte(Cycles, memory);
+        //A = Value;
+
+        A = Immediate(Cycles, memory);
 
         LDASetStatus();
 
@@ -112,10 +123,12 @@ int16_t CPU::Execute(int32_t& Cycles, Memory& memory)
       case INS_LDA_ZP:
       {
         // na naslednji poziciji je shranjen data ki ga je potrebno nalozit v A
-        uint8_t ZeroPageAdress = Fetch_Byte(Cycles, memory);
+        //uint8_t ZeroPageAdress = Fetch_Byte(Cycles, memory);
         // 3 clock cycle imamo ker rabi prebrat se kar je shranjeno na zero page addressu in ga dat v A
-        A = Read_Byte(Cycles, ZeroPageAdress, memory);
-  
+        //A = Read_Byte(Cycles, ZeroPageAdress, memory);
+
+        A = ZeroPage(Cycles, memory);
+
         LDASetStatus();
 
       }break;
@@ -123,13 +136,45 @@ int16_t CPU::Execute(int32_t& Cycles, Memory& memory)
       case INS_LDA_ZPX:
       {
         // na naslednji poziciji je shranjen data kateremu pristejemo vrednost X in nalozimo v A
-        uint8_t ZeroPageAdress = Fetch_Byte(Cycles, memory); 
+        //uint8_t ZeroPageAdress = Fetch_Byte(Cycles, memory); 
         // 4 clock cycle imamo ker rabi prebrat kar je shranjeno na zero page addressu in se pristet X
-        ZeroPageAdress += X;
+        //ZeroPageAdress += X;
 
         // Todo assert ce adress overflowa
-        A = Read_Byte(Cycles, ZeroPageAdress, memory);
-        Cycles--;
+        //A = Read_Byte(Cycles, ZeroPageAdress, memory);
+        //Cycles--;
+
+        A = ZeroPageX(Cycles, memory);
+  
+        LDASetStatus();
+
+      }break;
+
+      case INS_LDA_ABS:
+      {
+        uint16_t Abs_Address = Absolute(Cycles, memory);
+
+        A = Read_Byte_ABS(Cycles, Abs_Address, memory);
+  
+        LDASetStatus();
+
+      }break;
+
+      case INS_LDA_ABSX:
+      {
+        uint16_t Abs_Address = AbsoluteX(Cycles, memory);
+
+        A = Read_Byte_ABS(Cycles, Abs_Address, memory);
+  
+        LDASetStatus();
+
+      }break;
+
+      case INS_LDA_ABSY:
+      {
+        uint16_t Abs_Address = AbsoluteY(Cycles, memory);
+
+        A = Read_Byte_ABS(Cycles, Abs_Address, memory);
   
         LDASetStatus();
 
@@ -161,3 +206,122 @@ int16_t CPU::Execute(int32_t& Cycles, Memory& memory)
   // popravi boljse to ker zdej je Cycles uint torej ce gre pod 0 wrappa around
   return Cycles;
 }
+
+
+/*  implementations of adressing modes
+
+    not all instructions use all addressing modes, look it up in the datasheet
+
+    Implicit
+    Accumulator
+    Immediate
+    Zero Page
+    Zero Page,X
+    Zero Page,Y
+    Relative
+    Absolute
+    Absolute,X
+    Absolute,Y
+    Indirect
+    Indirect,X
+    Indirect,Y
+
+*/
+
+uint8_t CPU::Immediate(int32_t& Cycles, Memory& memory)
+{
+
+  // na naslednji poziciji je shranjen data ki ga je potrebno nalozit v A
+  uint8_t temp = Fetch_Byte(Cycles, memory);
+  return temp;
+
+}
+
+uint8_t CPU::ZeroPage(int32_t& Cycles, Memory& memory)
+{
+
+  // na naslednji poziciji je shranjen data ki ga je potrebno nalozit v A
+  uint8_t ZeroPageAdress = Fetch_Byte(Cycles, memory);
+  // 3 clock cycle imamo ker rabi prebrat se kar je shranjeno na zero page addressu in ga dat v A
+  uint8_t temp = Read_Byte(Cycles, ZeroPageAdress, memory);
+  return temp;
+}
+
+uint8_t CPU::ZeroPageX(int32_t& Cycles, Memory& memory)
+{
+
+  // na naslednji poziciji je shranjen data ki ga je potrebno nalozit v A
+  uint8_t ZeroPageAdress = Fetch_Byte(Cycles, memory);
+
+  ZeroPageAdress += X;
+  Cycles--;
+  // 3 clock cycle imamo ker rabi prebrat se kar je shranjeno na zero page addressu in ga dat v A
+  uint8_t temp = Read_Byte(Cycles, ZeroPageAdress, memory);
+  return temp;
+}
+
+uint8_t CPU::ZeroPageY(int32_t& Cycles, Memory& memory)
+{
+
+  // na naslednji poziciji je shranjen data ki ga je potrebno nalozit v A
+  uint8_t ZeroPageAdress = Fetch_Byte(Cycles, memory);
+
+  ZeroPageAdress += Y;
+  //porabimo se en cikel zaradi pristevanja y registra
+  Cycles--;
+  // 3 clock cycle imamo ker rabi prebrat se kar je shranjeno na zero page addressu in ga dat v A
+  uint8_t temp = Read_Byte(Cycles, ZeroPageAdress, memory);
+  return temp;
+}
+
+uint16_t CPU::Absolute(int32_t& Cycles, Memory& memory)
+{
+
+  // na naslednji poziciji je shranjen data ki ga je potrebno nalozit v A
+  uint8_t AbsAddressLOW = Fetch_Byte(Cycles, memory);
+  uint8_t AbsAddressHIGH = Fetch_Byte(Cycles, memory);
+
+  uint16_t AbsAddress = (AbsAddressHIGH << 8) | AbsAddressLOW;
+  // verjetno porabi se en cikel treba preverit zakaj
+  //Cycles--;
+
+  return AbsAddress;
+}
+
+uint16_t CPU::AbsoluteX(int32_t& Cycles, Memory& memory)
+{
+
+  // na naslednji poziciji je shranjen data ki ga je potrebno nalozit v A
+  uint8_t AbsAddressLOW = Fetch_Byte(Cycles, memory);
+  uint8_t AbsAddressHIGH = Fetch_Byte(Cycles, memory);uint16_t AbsAddress = (AbsAddressHIGH << 8) | AbsAddressLOW;
+
+  AbsAddress += X;
+  // porabi en cikel vec ce je page crossed
+  if (AbsAddress >= 0x00FF)
+  {
+    Cycles--;
+  }
+
+  return AbsAddress;
+}
+
+uint16_t CPU::AbsoluteY(int32_t& Cycles, Memory& memory)
+{
+
+  // na naslednji poziciji je shranjen data ki ga je potrebno nalozit v A
+  uint8_t AbsAddressLOW = Fetch_Byte(Cycles, memory);
+  uint8_t AbsAddressHIGH = Fetch_Byte(Cycles, memory);
+  uint16_t AbsAddress = (AbsAddressHIGH << 8) | AbsAddressLOW;
+  
+  AbsAddress += Y;
+  // porabi en cikel vec ce je page crossed
+  if (AbsAddress >= 0x00FF)
+  {
+    Cycles--;
+  }
+
+  return AbsAddress;
+}
+
+
+

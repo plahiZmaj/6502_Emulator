@@ -48,10 +48,15 @@ struct CPU
   // instruction load acumulator zero page, X
   // 1 byte opcode 2 byte je data ki ga hocemo loadat
   static constexpr uint8_t INS_LDA_ZPX = 0xB5;
+
+  static constexpr uint8_t INS_LDA_ABS = 0xAD;
+
+  static constexpr uint8_t INS_LDA_ABSX = 0xBD;
+
+  static constexpr uint8_t INS_LDA_ABSY = 0xB9;
   // instruction jump to subrutine absolute, pushes the address (minus one) of the return point on to the stack and then sets the program counter to the target memory address.
   // 1 byte opcode 2 byte je address kamor skocimo
   static constexpr uint8_t INS_JSR_ABS = 0x20;
-
 
   // CPU functions
 
@@ -67,6 +72,24 @@ struct CPU
 
   uint8_t Read_Byte(int32_t& Cycles, uint8_t& ZeroPageAddress, Memory& memory);
 
+  uint8_t Read_Byte_ABS(int32_t& Cycles, uint16_t& Abs_Adress, Memory& memory);
 
+  // Addressing modes
+
+  uint8_t Immediate(int32_t& Cycles, Memory& memory);
+
+  uint8_t ZeroPage(int32_t& Cycles, Memory& memory);
+
+  uint8_t ZeroPageX(int32_t& Cycles, Memory& memory);
+
+  uint8_t ZeroPageY(int32_t& Cycles, Memory& memory);
+
+  uint16_t Absolute(int32_t& Cycles, Memory& memory);
+  
+  uint16_t AbsoluteX(int32_t& Cycles, Memory& memory); 
+  
+  uint16_t AbsoluteY(int32_t& Cycles, Memory& memory);  
+
+  // Instruction functions 
   void LDASetStatus();
 };

@@ -137,6 +137,86 @@ TEST_F(test_6502, LoadAccumulatorZeroPageAndAddX)
     
 }
 
+TEST_F(test_6502, LoadAccumulatorAbsolute)
+{
+  // hard code test f
+  mem.Data[0xFFFC] = cpu.INS_LDA_ABS;
+  mem.Data[0xFFFC + 1] = 0x01;
+  mem.Data[0xFFFC + 2] = 0x01;
+  mem.Data[0x0101] = 0x82;
+  int32_t Cycles = 4;
+  // before we execute we take a copy of the cpu for verifying status flags
+  CPU cpu_copy = cpu;
+  
+  signed int CyclesLeftover = cpu.Execute(Cycles, mem);
+
+  // preverjamo ali je v Accumulatorju pravilna vrednost
+  EXPECT_EQ(cpu.A, 0x82);
+  // preverjamo ali smo porabili use predvidene cikle
+  EXPECT_EQ(CyclesLeftover, 0);
+
+  // potrebno je preveriti tudi status register
+  EXPECT_EQ(cpu.N, 0x01);
+  EXPECT_EQ(cpu.Z, 0x00);
+  
+  VerifyUnmodifiedFlagsFromLDA(cpu, cpu_copy); 
+    
+}
+
+TEST_F(test_6502, LoadAccumulatorAbsoluteX)
+{
+  // hard code test f
+  mem.Data[0xFFFC] = cpu.INS_LDA_ABSX;
+  mem.Data[0xFFFC + 1] = 0x02;
+  mem.Data[0xFFFC + 2] = 0x01;
+  cpu.X = 0x01;
+  mem.Data[0x0103] = 0x33;
+  int32_t Cycles = 5;
+  // before we execute we take a copy of the cpu for verifying status flags
+  CPU cpu_copy = cpu;
+  
+  signed int CyclesLeftover = cpu.Execute(Cycles, mem);
+
+  // preverjamo ali je v Accumulatorju pravilna vrednost
+  EXPECT_EQ(cpu.A, 0x33);
+  // preverjamo ali smo porabili use predvidene cikle
+  EXPECT_EQ(CyclesLeftover, 0);
+
+  // potrebno je preveriti tudi status register
+  EXPECT_EQ(cpu.N, 0x00);
+  EXPECT_EQ(cpu.Z, 0x00);
+  
+  VerifyUnmodifiedFlagsFromLDA(cpu, cpu_copy); 
+    
+}
+
+TEST_F(test_6502, LoadAccumulatorAbsoluteY)
+{
+  // hard code test f
+  mem.Data[0xFFFC] = cpu.INS_LDA_ABSY;
+  mem.Data[0xFFFC + 1] = 1;
+  mem.Data[0xFFFC + 2] = 1;
+  cpu.Y = 0x01;
+  mem.Data[0x0102] = 0x33;
+  int32_t Cycles = 5;
+  // before we execute we take a copy of the cpu for verifying status flags
+  CPU cpu_copy = cpu;
+  
+  signed int CyclesLeftover = cpu.Execute(Cycles, mem);
+
+  // preverjamo ali je v Accumulatorju pravilna vrednost
+  EXPECT_EQ(cpu.A, 0x33);
+  // preverjamo ali smo porabili use predvidene cikle
+  EXPECT_EQ(CyclesLeftover, 0);
+
+  // potrebno je preveriti tudi status register
+  EXPECT_EQ(cpu.N, 0x00);
+  EXPECT_EQ(cpu.Z, 0x00);
+  
+  VerifyUnmodifiedFlagsFromLDA(cpu, cpu_copy); 
+    
+}
+
 
 
 
@@ -145,3 +225,11 @@ int main(int argc, char* argv[])
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
+
+
+
+// 0x35   -> xxxx xxxx 
+//           0011 0101
+
+// 0x4A6F  -> xxxx xxxx xxxx xxxx
+//            0100 1010 0110 1111
