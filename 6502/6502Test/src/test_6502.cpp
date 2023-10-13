@@ -141,9 +141,9 @@ TEST_F(test_6502, LoadAccumulatorAbsolute)
 {
   // hard code test f
   mem.Data[0xFFFC] = cpu.INS_LDA_ABS;
-  mem.Data[0xFFFC + 1] = 0x01;
+  mem.Data[0xFFFC + 1] = 0x00;
   mem.Data[0xFFFC + 2] = 0x01;
-  mem.Data[0x0101] = 0x82;
+  mem.Data[0x0100] = 0x82;
   int32_t Cycles = 4;
   // before we execute we take a copy of the cpu for verifying status flags
   CPU cpu_copy = cpu;
@@ -167,10 +167,38 @@ TEST_F(test_6502, LoadAccumulatorAbsoluteX)
 {
   // hard code test f
   mem.Data[0xFFFC] = cpu.INS_LDA_ABSX;
-  mem.Data[0xFFFC + 1] = 0x02;
-  mem.Data[0xFFFC + 2] = 0x01;
+  mem.Data[0xFFFC + 1] = 0x01;
+  mem.Data[0xFFFC + 2] = 0x00;
   cpu.X = 0x01;
-  mem.Data[0x0103] = 0x33;
+  mem.Data[0x0002] = 0x33;
+  int32_t Cycles = 4;
+  // before we execute we take a copy of the cpu for verifying status flags
+  CPU cpu_copy = cpu;
+  
+  signed int CyclesLeftover = cpu.Execute(Cycles, mem);
+
+  // preverjamo ali je v Accumulatorju pravilna vrednost
+  EXPECT_EQ(cpu.A, 0x33);
+  // preverjamo ali smo porabili use predvidene cikle
+  EXPECT_EQ(CyclesLeftover, 0);
+
+  // potrebno je preveriti tudi status register
+  EXPECT_EQ(cpu.N, 0x00);
+  EXPECT_EQ(cpu.Z, 0x00);
+  
+  VerifyUnmodifiedFlagsFromLDA(cpu, cpu_copy); 
+    
+}
+
+
+TEST_F(test_6502, LoadAccumulatorAbsoluteXPageCrossed)
+{
+  // hard code test f
+  mem.Data[0xFFFC] = cpu.INS_LDA_ABSX;
+  mem.Data[0xFFFC + 1] = 0xFC;
+  mem.Data[0xFFFC + 2] = 0x00;
+  cpu.X = 0x0A;
+  mem.Data[0x0106] = 0x33;
   int32_t Cycles = 5;
   // before we execute we take a copy of the cpu for verifying status flags
   CPU cpu_copy = cpu;
@@ -194,10 +222,37 @@ TEST_F(test_6502, LoadAccumulatorAbsoluteY)
 {
   // hard code test f
   mem.Data[0xFFFC] = cpu.INS_LDA_ABSY;
-  mem.Data[0xFFFC + 1] = 1;
-  mem.Data[0xFFFC + 2] = 1;
+  mem.Data[0xFFFC + 1] = 0x02;
+  mem.Data[0xFFFC + 2] = 0x00;
   cpu.Y = 0x01;
-  mem.Data[0x0102] = 0x33;
+  mem.Data[0x0003] = 0x33;
+  int32_t Cycles = 4;
+  // before we execute we take a copy of the cpu for verifying status flags
+  CPU cpu_copy = cpu;
+  
+  signed int CyclesLeftover = cpu.Execute(Cycles, mem);
+
+  // preverjamo ali je v Accumulatorju pravilna vrednost
+  EXPECT_EQ(cpu.A, 0x33);
+  // preverjamo ali smo porabili use predvidene cikle
+  EXPECT_EQ(CyclesLeftover, 0);
+
+  // potrebno je preveriti tudi status register
+  EXPECT_EQ(cpu.N, 0x00);
+  EXPECT_EQ(cpu.Z, 0x00);
+  
+  VerifyUnmodifiedFlagsFromLDA(cpu, cpu_copy); 
+    
+}
+
+TEST_F(test_6502, LoadAccumulatorAbsoluteYPageCrossed)
+{
+  // hard code test f
+  mem.Data[0xFFFC] = cpu.INS_LDA_ABSY;
+  mem.Data[0xFFFC + 1] = 0xFE;
+  mem.Data[0xFFFC + 2] = 0x00;
+  cpu.Y = 0x0A;
+  mem.Data[0x0108] = 0x33;
   int32_t Cycles = 5;
   // before we execute we take a copy of the cpu for verifying status flags
   CPU cpu_copy = cpu;

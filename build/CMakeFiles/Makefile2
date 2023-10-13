@@ -242,8 +242,8 @@ gmock: 6502Test/googletest/googlemock/CMakeFiles/gmock.dir/rule
 # Target rules for target 6502Test/googletest/googlemock/CMakeFiles/gmock_main.dir
 
 # All Build rule for target.
-6502Test/googletest/googlemock/CMakeFiles/gmock_main.dir/all: 6502Test/googletest/googletest/CMakeFiles/gtest.dir/all
 6502Test/googletest/googlemock/CMakeFiles/gmock_main.dir/all: 6502Test/googletest/googlemock/CMakeFiles/gmock.dir/all
+6502Test/googletest/googlemock/CMakeFiles/gmock_main.dir/all: 6502Test/googletest/googletest/CMakeFiles/gtest.dir/all
 	$(MAKE) $(MAKESILENT) -f 6502Test\googletest\googlemock\CMakeFiles\gmock_main.dir\build.make 6502Test/googletest/googlemock/CMakeFiles/gmock_main.dir/depend
 	$(MAKE) $(MAKESILENT) -f 6502Test\googletest\googlemock\CMakeFiles\gmock_main.dir\build.make 6502Test/googletest/googlemock/CMakeFiles/gmock_main.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="D:\C Projekti\Emulating_6502\build\CMakeFiles" --progress-num=7,8 "Built target gmock_main"

@@ -196,7 +196,8 @@ int16_t CPU::Execute(int32_t& Cycles, Memory& memory)
     
     default:
       std::cout << "Instruction not handeld: " << static_cast<int16_t>(Ins) << std::endl;
-
+      // we want to throw an error if istruction is not handeld
+      throw -1;
       // TODO assert
       break;
     }
@@ -293,16 +294,17 @@ uint16_t CPU::AbsoluteX(int32_t& Cycles, Memory& memory)
 
   // na naslednji poziciji je shranjen data ki ga je potrebno nalozit v A
   uint8_t AbsAddressLOW = Fetch_Byte(Cycles, memory);
-  uint8_t AbsAddressHIGH = Fetch_Byte(Cycles, memory);uint16_t AbsAddress = (AbsAddressHIGH << 8) | AbsAddressLOW;
+  uint8_t AbsAddressHIGH = Fetch_Byte(Cycles, memory);
+  uint16_t AbsAddress = (AbsAddressHIGH << 8) | AbsAddressLOW;
 
-  AbsAddress += X;
+  uint16_t AbsAddressX = AbsAddress + X;
   // porabi en cikel vec ce je page crossed
-  if (AbsAddress >= 0x00FF)
+  if ((AbsAddress <= 0x00FF) && (AbsAddressX > 0x00FF))
   {
     Cycles--;
   }
 
-  return AbsAddress;
+  return AbsAddressX;
 }
 
 uint16_t CPU::AbsoluteY(int32_t& Cycles, Memory& memory)
@@ -313,14 +315,14 @@ uint16_t CPU::AbsoluteY(int32_t& Cycles, Memory& memory)
   uint8_t AbsAddressHIGH = Fetch_Byte(Cycles, memory);
   uint16_t AbsAddress = (AbsAddressHIGH << 8) | AbsAddressLOW;
   
-  AbsAddress += Y;
+  uint16_t AbsAddressY = AbsAddress + Y;
   // porabi en cikel vec ce je page crossed
-  if (AbsAddress >= 0x00FF)
+  if ((AbsAddress <= 0x00FF) && (AbsAddressY > 0x00FF))
   {
     Cycles--;
   }
 
-  return AbsAddress;
+  return AbsAddressY;
 }
 
 
