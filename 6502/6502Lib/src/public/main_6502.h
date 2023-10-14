@@ -54,9 +54,15 @@ struct CPU
   static constexpr uint8_t INS_LDA_ABSX = 0xBD;
 
   static constexpr uint8_t INS_LDA_ABSY = 0xB9;
+
+  static constexpr uint8_t INS_LDA_INDX = 0xA1;
+
+  static constexpr uint8_t INS_LDA_INDY = 0xB1;
   // instruction jump to subrutine absolute, pushes the address (minus one) of the return point on to the stack and then sets the program counter to the target memory address.
   // 1 byte opcode 2 byte je address kamor skocimo
   static constexpr uint8_t INS_JSR_ABS = 0x20;
+
+
 
   // CPU functions
 
@@ -67,6 +73,8 @@ struct CPU
   uint8_t Fetch_Byte(int32_t& Cycles, Memory& memory);
 
   uint16_t Fetch_Word(int32_t& Cycles, Memory& memory);
+
+  uint16_t Read_Word_ZeroPage(int32_t& Cycles, uint16_t AbsAddress, Memory& memory);
 
   void WriteWord(uint16_t Value, uint32_t Address, int32_t& Cycles, Memory& memory);
 
@@ -88,7 +96,12 @@ struct CPU
   
   uint16_t AbsoluteX(int32_t& Cycles, Memory& memory); 
   
-  uint16_t AbsoluteY(int32_t& Cycles, Memory& memory);  
+  uint16_t AbsoluteY(int32_t& Cycles, Memory& memory); 
+
+  uint8_t IndirectX(int32_t& Cycles, Memory& memory); 
+  
+  uint8_t IndirectY(int32_t& Cycles, Memory& memory); 
+
 
   // Instruction functions 
   void LDASetStatus();

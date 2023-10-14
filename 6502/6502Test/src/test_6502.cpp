@@ -190,6 +190,24 @@ TEST_F(test_6502, LoadAccumulatorAbsoluteX)
     
 }
 
+TEST_F(test_6502, LoadAccumulatorAbsoluteXTooManyCyclesExpected)
+{
+  // hard code test f
+  mem.Data[0xFFFC] = cpu.INS_LDA_ABSX;
+  mem.Data[0xFFFC + 1] = 0x01;
+  mem.Data[0xFFFC + 2] = 0x00;
+  cpu.X = 0x01;
+  mem.Data[0x0002] = 0x33;
+  int32_t Cycles = 5;
+  // before we execute we take a copy of the cpu for verifying status flags
+  CPU cpu_copy = cpu;
+  
+
+  // preverjamo ali bo throwalo error ce executa instrukcijo ki jo ne pozna
+  EXPECT_THROW(cpu.Execute(Cycles, mem), std::runtime_error);
+    
+}
+
 
 TEST_F(test_6502, LoadAccumulatorAbsoluteXPageCrossed)
 {
@@ -271,6 +289,67 @@ TEST_F(test_6502, LoadAccumulatorAbsoluteYPageCrossed)
   VerifyUnmodifiedFlagsFromLDA(cpu, cpu_copy); 
     
 }
+
+
+TEST_F(test_6502, LoadAccumulatorIndirectX)
+{
+  // hard code test f
+  mem.Data[0xFFFC] = cpu.INS_LDA_INDX;
+  mem.Data[0xFFFC + 1] = 0x02;   // zero page address
+  cpu.X = 0x02;                  // add X to the zero page address
+  mem.Data[0x0004] = 0x37;
+  mem.Data[0x0037] = 0x01;
+  mem.Data[0x0038] = 0x02;
+  mem.Data[0x0201] = 0xA0;
+  int32_t Cycles = 6;
+  // before we execute we take a copy of the cpu for verifying status flags
+  CPU cpu_copy = cpu;
+  
+  signed int CyclesLeftover = cpu.Execute(Cycles, mem);
+
+  // preverjamo ali je v Accumulatorju pravilna vrednost
+  EXPECT_EQ(cpu.A, 0xA0);
+  // preverjamo ali smo porabili use predvidene cikle
+  EXPECT_EQ(CyclesLeftover, 0);
+
+  // potrebno je preveriti tudi status register
+  EXPECT_EQ(cpu.N, 0x01);
+  EXPECT_EQ(cpu.Z, 0x00);
+  
+  VerifyUnmodifiedFlagsFromLDA(cpu, cpu_copy); 
+    
+}
+
+TEST_F(test_6502, LoadAccumulatorIndirectY)
+{
+  // hard code test f
+  mem.Data[0xFFFC] = cpu.INS_LDA_INDY;
+  mem.Data[0xFFFC + 1] = 0x02;   // zero page address
+  cpu.Y = 0x02;                  // add X to the zero page address
+  mem.Data[0x0002] = 0x37;
+  mem.Data[0x0037] = 0x01;
+  mem.Data[0x0038] = 0x02;
+  mem.Data[0x0203] = 0xA0;
+  int32_t Cycles = 5;
+  // before we execute we take a copy of the cpu for verifying status flags
+  CPU cpu_copy = cpu;
+  
+  signed int CyclesLeftover = cpu.Execute(Cycles, mem);
+
+  // preverjamo ali je v Accumulatorju pravilna vrednost
+  EXPECT_EQ(cpu.A, 0xA0);
+  // preverjamo ali smo porabili use predvidene cikle
+  EXPECT_EQ(CyclesLeftover, 0);
+
+  // potrebno je preveriti tudi status register
+  EXPECT_EQ(cpu.N, 0x01);
+  EXPECT_EQ(cpu.Z, 0x00);
+  
+  VerifyUnmodifiedFlagsFromLDA(cpu, cpu_copy); 
+    
+}
+
+
 
 
 

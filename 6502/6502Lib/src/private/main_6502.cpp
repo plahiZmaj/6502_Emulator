@@ -1,4 +1,5 @@
 #include "main_6502.h"
+#include <stdexcept>
 
 void Memory::Init()
 {
@@ -56,6 +57,20 @@ uint16_t CPU::Fetch_Word(int32_t& Cycles, Memory& memory)
   PC++;
 
   Cycles-=2;
+  return Data;
+}
+
+uint16_t CPU::Read_Word_ZeroPage(int32_t& Cycles,uint16_t AbsAddress, Memory& memory)
+{
+  // 6502 is little endian (prvo preberemo LSB)
+  uint16_t Data = memory[AbsAddress];
+  uint8_t addplus1 = memory[AbsAddress + 1];
+  Data |= (addplus1 << 8);
+
+  Cycles--;
+  //std::cout << "AbsAddress plus 1 is : " << AbsAddress + 1 << std::endl;
+  //std::cout << "AbsAddress is : " << AbsAddress << std::endl;
+  //std::cout << "Data is : " << Data << std::endl;
   return Data;
 }
 
@@ -180,6 +195,36 @@ int16_t CPU::Execute(int32_t& Cycles, Memory& memory)
 
       }break;
 
+      case INS_LDA_INDX:
+      {
+        uint8_t IndirectTargetAddLSB = IndirectX(Cycles, memory);
+
+        uint16_t IndirectTarget = (0x00 << 8 ) | IndirectTargetAddLSB;
+
+        uint16_t AbsTargetAddress = Read_Word_ZeroPage(Cycles, IndirectTarget, memory);
+
+        A = Read_Byte_ABS(Cycles, AbsTargetAddress, memory);
+  
+        LDASetStatus();
+
+      }break;
+
+      case INS_LDA_INDY:
+      {
+        uint8_t IndirectTargetAddLSB = IndirectY(Cycles, memory);
+
+        uint16_t IndirectTarget = (0x00 << 8 ) | IndirectTargetAddLSB;
+
+        uint16_t AbsTargetAddress = Read_Word_ZeroPage(Cycles, IndirectTarget, memory);
+
+        uint16_t AbsTargetAddressPlusY = AbsTargetAddress + Y;
+
+        A = Read_Byte_ABS(Cycles, AbsTargetAddressPlusY, memory);
+  
+        LDASetStatus();
+
+      }break;
+
       case INS_JSR_ABS:
       {
         // preberemo naslov instrukcije na katero bomo skocli
@@ -197,7 +242,7 @@ int16_t CPU::Execute(int32_t& Cycles, Memory& memory)
     default:
       std::cout << "Instruction not handeld: " << static_cast<int16_t>(Ins) << std::endl;
       // we want to throw an error if istruction is not handeld
-      throw -1;
+      throw std::runtime_error(" Exepction thrown.\n ");
       // TODO assert
       break;
     }
@@ -298,8 +343,8 @@ uint16_t CPU::AbsoluteX(int32_t& Cycles, Memory& memory)
   uint16_t AbsAddress = (AbsAddressHIGH << 8) | AbsAddressLOW;
 
   uint16_t AbsAddressX = AbsAddress + X;
-  // porabi en cikel vec ce je page crossed
-  if ((AbsAddress <= 0x00FF) && (AbsAddressX > 0x00FF))
+  // porabi en cikel vec ce je page crossed, preverimo ce se je zgornji bajt spremenil
+  if ((AbsAddress & 0xFF00) != (AbsAddressX & 0xFF00))
   {
     Cycles--;
   }
@@ -316,13 +361,37 @@ uint16_t CPU::AbsoluteY(int32_t& Cycles, Memory& memory)
   uint16_t AbsAddress = (AbsAddressHIGH << 8) | AbsAddressLOW;
   
   uint16_t AbsAddressY = AbsAddress + Y;
-  // porabi en cikel vec ce je page crossed
-  if ((AbsAddress <= 0x00FF) && (AbsAddressY > 0x00FF))
+  // porabi en cikel vec ce je page crossed, preverimo ce se je zgornji bajt spremenil
+  if ((AbsAddress & 0xFF00) != (AbsAddressY & 0xFF00))
   {
     Cycles--;
   }
 
   return AbsAddressY;
+}
+
+
+uint8_t CPU::IndirectX(int32_t& Cycles, Memory& memory)
+{
+  // na naslednjem mestu je zeropage address kateremu je treba pristet X, in nato je na tem addressu LSB od target addressa
+  uint8_t ZeroPageIndirectAdress = Fetch_Byte(Cycles, memory);
+  uint8_t ZeroPageIndirectAdressANDX = ZeroPageIndirectAdress + X;
+  Cycles--;
+  // TODO zeropage wrap around
+
+  uint8_t TargetAddressLSB = Read_Byte(Cycles, ZeroPageIndirectAdressANDX, memory);
+  
+  return TargetAddressLSB;
+}
+
+uint8_t CPU::IndirectY(int32_t& Cycles, Memory& memory)
+{
+  // na naslednjem mestu je zeropage address kateremu je treba pristet X, in nato je na tem addressu LSB od target addressa
+  uint8_t ZeroPageIndirectAdress = Fetch_Byte(Cycles, memory);
+  // TODO zeropage wrap around
+  uint8_t TargetAddressLSB = Read_Byte(Cycles, ZeroPageIndirectAdress, memory);
+  
+  return TargetAddressLSB;
 }
 
 
