@@ -122,6 +122,16 @@ void CPU::LDXSetStatus()
   if ((X & 0b10000000) > 0) N = 1;
 }
 
+// itak ima access do A zato nerabimo passat notri
+void CPU::LDYSetStatus()
+{
+  // seting the Z(zero) and N(negative) flag... Glej dokumentacijo
+  // ce je A = 0 setamo Z
+  if (Y == 0) Z = 1;
+  // ce je 7 bit A = 1 setamo N
+  if ((Y & 0b10000000) > 0) N = 1;
+}
+
 
 int16_t CPU::Execute(int32_t& Cycles, Memory& memory)
 {
@@ -287,6 +297,69 @@ int16_t CPU::Execute(int32_t& Cycles, Memory& memory)
         LDXSetStatus();
 
       }break;
+
+      case INS_LDY_IM:
+      {
+        // na naslednji poziciji je shranjen data ki ga je potrebno nalozit v A
+        //uint8_t Value = Fetch_Byte(Cycles, memory);
+        //A = Value;
+
+        Y = Immediate(Cycles, memory);
+
+        LDYSetStatus();
+
+      }break;
+
+      case INS_LDY_ZP:
+      {
+        // na naslednji poziciji je shranjen data ki ga je potrebno nalozit v A
+        //uint8_t ZeroPageAdress = Fetch_Byte(Cycles, memory);
+        // 3 clock cycle imamo ker rabi prebrat se kar je shranjeno na zero page addressu in ga dat v A
+        //A = Read_Byte(Cycles, ZeroPageAdress, memory);
+
+        Y = ZeroPage(Cycles, memory);
+
+        LDYSetStatus();
+
+      }break;
+
+      case INS_LDY_ZPX:
+      {
+        // na naslednji poziciji je shranjen data kateremu pristejemo vrednost X in nalozimo v A
+        //uint8_t ZeroPageAdress = Fetch_Byte(Cycles, memory); 
+        // 4 clock cycle imamo ker rabi prebrat kar je shranjeno na zero page addressu in se pristet X
+        //ZeroPageAdress += X;
+
+        // Todo assert ce adress overflowa
+        //A = Read_Byte(Cycles, ZeroPageAdress, memory);
+        //Cycles--;
+
+        Y = ZeroPageX(Cycles, memory);
+  
+        LDYSetStatus();
+
+      }break;
+
+      case INS_LDY_ABS:
+      {
+        uint16_t Abs_Address = Absolute(Cycles, memory);
+
+        Y = Read_Byte_ABS(Cycles, Abs_Address, memory);
+  
+        LDYSetStatus();
+
+      }break;
+
+      case INS_LDY_ABSX:
+      {
+        uint16_t Abs_Address = AbsoluteX(Cycles, memory);
+
+        Y = Read_Byte_ABS(Cycles, Abs_Address, memory);
+  
+        LDYSetStatus();
+
+      }break;
+
 
       case INS_JSR_ABS:
       {
@@ -460,9 +533,9 @@ uint16_t CPU::IndirectY(int32_t& Cycles, Memory& memory)
   uint8_t IndirectTargetAddLSB = Read_Byte(Cycles, ZeroPageIndirectAdress, memory);
 
   uint16_t AbsTargetAddress = Read_Word_ZeroPage(Cycles, IndirectTargetAddLSB, memory);
-  std::cout << "Vrednost zeropageadd : " << AbsTargetAddress << std::endl;
+  //std::cout << "Vrednost zeropageadd : " << AbsTargetAddress << std::endl;
   uint16_t AbsTargetAddressPlusY = AbsTargetAddress + Y;
-  std::cout << "Vrednost zeropageadd + Y : " << AbsTargetAddressPlusY << std::endl;
+  //std::cout << "Vrednost zeropageadd + Y : " << AbsTargetAddressPlusY << std::endl;
 
   if ((AbsTargetAddress & 0xFF00) != (AbsTargetAddressPlusY & 0xFF00))
   {

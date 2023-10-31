@@ -15,6 +15,8 @@ public:
     void TestLoadRegisterImidiateMode(Byte opcode, Byte CPU::* Register);
     void TestLoadRegisterZeroPage(Byte opcode, Byte CPU::* Register);
     void TestLoadRegisterAbsolute(Byte opcode, Byte CPU::* Register);
+    void TestLoadRegisterZeroPageXorY(Byte opcode, Byte CPU::* Register, Byte CPU::* XorY);
+    void TestLoadRegisterAbsoluteXorY(Byte opcode, Byte CPU::* Register, Byte CPU::* XorY);
 
     virtual void SetUp()
     {
@@ -61,7 +63,7 @@ TEST_F(test_6502, LoadAccumulatorImidiateMode1CycleReqstedInteadOf2)
   // before we execute we take a copy of the cpu for verifying status flags
   CPU cpu_copy = cpu;
 
-  signed int CyclesLeftover = cpu.Execute(Cycles, mem);
+  int32_t CyclesLeftover = cpu.Execute(Cycles, mem);
 
   EXPECT_EQ(CyclesLeftover, -1);
     
@@ -105,6 +107,13 @@ TEST_F(test_6502, LoadXRegisterImidiateMode)
     
 }
 
+TEST_F(test_6502, LoadYRegisterImidiateMode)
+{
+
+  TestLoadRegisterImidiateMode(CPU::INS_LDY_IM, &CPU::Y);
+    
+}
+
 void test_6502::TestLoadRegisterZeroPage(Byte opcode, Byte CPU::* Register)
 {
   // hard code test f
@@ -143,14 +152,22 @@ TEST_F(test_6502, LoadXRegisterZeroPage)
   
 }
 
+TEST_F(test_6502, LoadYRegisterZeroPage)
+{
 
-TEST_F(test_6502, LoadAccumulatorZeroPageAndAddX)
+  TestLoadRegisterZeroPage(CPU::INS_LDY_ZP, &CPU::Y);
+  
+}
+
+
+
+void test_6502::TestLoadRegisterZeroPageXorY(Byte opcode, Byte CPU::* Register, Byte CPU::* XorY)
 {
   // hard code test f
-  mem.Data[0xFFFC] = cpu.INS_LDA_ZPX;
+  mem.Data[0xFFFC] = opcode;
   mem.Data[0xFFFC + 1] = 0x42;
   mem.Data[0x75] = 0x33;
-  cpu.X = 0x33;
+  cpu.*XorY = 0x33;
   int32_t Cycles = 4;
   // before we execute we take a copy of the cpu for verifying status flags
   CPU cpu_copy = cpu;
@@ -158,7 +175,7 @@ TEST_F(test_6502, LoadAccumulatorZeroPageAndAddX)
   signed int CyclesLeftover = cpu.Execute(Cycles, mem);
 
   // preverjamo ali je v Accumulatorju pravilna vrednost
-  EXPECT_EQ(cpu.A, 0x33);
+  EXPECT_EQ(cpu.*Register, 0x33);
   // preverjamo ali smo porabili use predvidene cikle
   EXPECT_EQ(CyclesLeftover, 0);
 
@@ -166,33 +183,28 @@ TEST_F(test_6502, LoadAccumulatorZeroPageAndAddX)
   EXPECT_EQ(cpu.N, 0x00);
   EXPECT_EQ(cpu.Z, 0x00);
   
-  VerifyUnmodifiedFlagsFromLDA(cpu, cpu_copy); 
+  VerifyUnmodifiedFlagsFromLDA(cpu, cpu_copy);
+}
+
+
+TEST_F(test_6502, LoadAccumulatorZeroPageAndAddX)
+{
+  
+  TestLoadRegisterZeroPageXorY(CPU::INS_LDA_ZPX, &CPU::A, &CPU::X);
     
 }
 
 TEST_F(test_6502, LoadXRegisterZeroPageAndAddY)
 {
-  // hard code test f
-  mem.Data[0xFFFC] = cpu.INS_LDX_ZPY;
-  mem.Data[0xFFFC + 1] = 0x42;
-  mem.Data[0x75] = 0x33;
-  cpu.Y = 0x33;
-  int32_t Cycles = 4;
-  // before we execute we take a copy of the cpu for verifying status flags
-  CPU cpu_copy = cpu;
-  
-  signed int CyclesLeftover = cpu.Execute(Cycles, mem);
 
-  // preverjamo ali je v Accumulatorju pravilna vrednost
-  EXPECT_EQ(cpu.X, 0x33);
-  // preverjamo ali smo porabili use predvidene cikle
-  EXPECT_EQ(CyclesLeftover, 0);
+  TestLoadRegisterZeroPageXorY(CPU::INS_LDX_ZPY, &CPU::X, &CPU::Y); 
+    
+}
 
-  // potrebno je preveriti tudi status register
-  EXPECT_EQ(cpu.N, 0x00);
-  EXPECT_EQ(cpu.Z, 0x00);
-  
-  VerifyUnmodifiedFlagsFromLDA(cpu, cpu_copy); 
+TEST_F(test_6502, LoadYRegisterZeroPageAndAddX)
+{
+
+  TestLoadRegisterZeroPageXorY(CPU::INS_LDY_ZPX, &CPU::Y, &CPU::X); 
     
 }
 
@@ -240,13 +252,20 @@ TEST_F(test_6502, LoadXRegisterAbsolute)
     
 }
 
-TEST_F(test_6502, LoadAccumulatorAbsoluteX)
+TEST_F(test_6502, LoadYRegisterAbsolute)
+{
+  
+  TestLoadRegisterAbsolute(CPU::INS_LDY_ABS, &CPU::Y);
+    
+}
+
+void test_6502::TestLoadRegisterAbsoluteXorY(Byte opcode, Byte CPU::* Register, Byte CPU::* XorY)
 {
   // hard code test f
-  mem.Data[0xFFFC] = cpu.INS_LDA_ABSX;
+  mem.Data[0xFFFC] = opcode;
   mem.Data[0xFFFC + 1] = 0x01;
   mem.Data[0xFFFC + 2] = 0x00;
-  cpu.X = 0x01;
+  cpu.*XorY = 0x01;
   mem.Data[0x0002] = 0x33;
   int32_t Cycles = 4;
   // before we execute we take a copy of the cpu for verifying status flags
@@ -255,7 +274,7 @@ TEST_F(test_6502, LoadAccumulatorAbsoluteX)
   signed int CyclesLeftover = cpu.Execute(Cycles, mem);
 
   // preverjamo ali je v Accumulatorju pravilna vrednost
-  EXPECT_EQ(cpu.A, 0x33);
+  EXPECT_EQ(cpu.*Register, 0x33);
   // preverjamo ali smo porabili use predvidene cikle
   EXPECT_EQ(CyclesLeftover, 0);
 
@@ -267,31 +286,20 @@ TEST_F(test_6502, LoadAccumulatorAbsoluteX)
     
 }
 
-TEST_F(test_6502, LoadXRegisterAbsoluteY)
+
+
+TEST_F(test_6502, LoadAccumulatorAbsoluteX)
 {
-  // hard code test f
-  mem.Data[0xFFFC] = cpu.INS_LDX_ABSY;
-  mem.Data[0xFFFC + 1] = 0x01;
-  mem.Data[0xFFFC + 2] = 0x00;
-  cpu.Y = 0x01;
-  mem.Data[0x0002] = 0x33;
-  int32_t Cycles = 4;
-  // before we execute we take a copy of the cpu for verifying status flags
-  CPU cpu_copy = cpu;
-  
-  signed int CyclesLeftover = cpu.Execute(Cycles, mem);
 
-  // preverjamo ali je v Accumulatorju pravilna vrednost
-  EXPECT_EQ(cpu.X, 0x33);
-  // preverjamo ali smo porabili use predvidene cikle
-  EXPECT_EQ(CyclesLeftover, 0);
+  TestLoadRegisterAbsoluteXorY(CPU::INS_LDA_ABSX, &CPU::A, &CPU::X);
 
-  // potrebno je preveriti tudi status register
-  EXPECT_EQ(cpu.N, 0x00);
-  EXPECT_EQ(cpu.Z, 0x00);
-  
-  VerifyUnmodifiedFlagsFromLDA(cpu, cpu_copy); 
-    
+}
+
+TEST_F(test_6502, LoadAccumulatorAbsoluteY)
+{
+
+  TestLoadRegisterAbsoluteXorY(CPU::INS_LDA_ABSY, &CPU::A, &CPU::Y);
+
 }
 
 TEST_F(test_6502, LoadAccumulatorAbsoluteXTooManyCyclesExpected)
@@ -338,32 +346,6 @@ TEST_F(test_6502, LoadAccumulatorAbsoluteXPageCrossed)
     
 }
 
-TEST_F(test_6502, LoadAccumulatorAbsoluteY)
-{
-  // hard code test f
-  mem.Data[0xFFFC] = cpu.INS_LDA_ABSY;
-  mem.Data[0xFFFC + 1] = 0x02;
-  mem.Data[0xFFFC + 2] = 0x00;
-  cpu.Y = 0x01;
-  mem.Data[0x0003] = 0x33;
-  int32_t Cycles = 4;
-  // before we execute we take a copy of the cpu for verifying status flags
-  CPU cpu_copy = cpu;
-  
-  signed int CyclesLeftover = cpu.Execute(Cycles, mem);
-
-  // preverjamo ali je v Accumulatorju pravilna vrednost
-  EXPECT_EQ(cpu.A, 0x33);
-  // preverjamo ali smo porabili use predvidene cikle
-  EXPECT_EQ(CyclesLeftover, 0);
-
-  // potrebno je preveriti tudi status register
-  EXPECT_EQ(cpu.N, 0x00);
-  EXPECT_EQ(cpu.Z, 0x00);
-  
-  VerifyUnmodifiedFlagsFromLDA(cpu, cpu_copy); 
-    
-}
 
 TEST_F(test_6502, LoadAccumulatorAbsoluteYPageCrossed)
 {
@@ -390,6 +372,20 @@ TEST_F(test_6502, LoadAccumulatorAbsoluteYPageCrossed)
   
   VerifyUnmodifiedFlagsFromLDA(cpu, cpu_copy); 
     
+}
+
+TEST_F(test_6502, LoadXRegisterAbsoluteY)
+{
+
+  TestLoadRegisterAbsoluteXorY(CPU::INS_LDX_ABSY, &CPU::X, &CPU::Y);
+
+}
+
+TEST_F(test_6502, LoadYRegisterAbsoluteX)
+{
+
+  TestLoadRegisterAbsoluteXorY(CPU::INS_LDY_ABSX, &CPU::Y, &CPU::X);
+
 }
 
 

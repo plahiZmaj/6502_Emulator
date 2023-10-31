@@ -73,6 +73,18 @@ struct CPU
   static constexpr uint8_t INS_LDX_ABSY = 0xBE;
 
 
+  /*      Load Y register instructions      */
+  static constexpr uint8_t INS_LDY_IM = 0xA0;
+
+  static constexpr uint8_t INS_LDY_ZP = 0xA4;
+
+  static constexpr uint8_t INS_LDY_ZPX = 0xB4;
+
+  static constexpr uint8_t INS_LDY_ABS = 0xAC;
+
+  static constexpr uint8_t INS_LDY_ABSX = 0xBC;
+
+
 
   // instruction jump to subrutine absolute, pushes the address (minus one) of the return point on to the stack and then sets the program counter to the target memory address.
   // 1 byte opcode 2 byte je address kamor skocimo
@@ -122,4 +134,5 @@ struct CPU
   // Instruction functions 
   void LDASetStatus();
   void LDXSetStatus();
+  void LDYSetStatus();
 };
