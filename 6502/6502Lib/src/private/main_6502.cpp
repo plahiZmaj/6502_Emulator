@@ -60,12 +60,13 @@ uint16_t CPU::Fetch_Word(int32_t& Cycles, Memory& memory)
   return Data;
 }
 
-uint16_t CPU::Read_Word_ZeroPage(int32_t& Cycles,uint16_t AbsAddress, Memory& memory)
+uint16_t CPU::Read_Word_ZeroPage(int32_t& Cycles,uint8_t ZeroPageAddress, Memory& memory)
 {
   // 6502 is little endian (prvo preberemo LSB)
-  uint16_t Data = memory[AbsAddress];
-  uint8_t addplus1 = memory[AbsAddress + 1];
-  Data |= (addplus1 << 8);
+  uint16_t DataLSB = memory[ZeroPageAddress];
+  uint16_t DataMSB = memory[ZeroPageAddress + 1];
+  //uint8_t addplus1 = memory[AbsAddress + 1];
+  uint16_t Data = (DataMSB << 8) | DataLSB; 
 
   Cycles--;
   //std::cout << "AbsAddress plus 1 is : " << AbsAddress + 1 << std::endl;
@@ -109,6 +110,16 @@ void CPU::LDASetStatus()
   if (A == 0) Z = 1;
   // ce je 7 bit A = 1 setamo N
   if ((A & 0b10000000) > 0) N = 1;
+}
+
+// itak ima access do A zato nerabimo passat notri
+void CPU::LDXSetStatus()
+{
+  // seting the Z(zero) and N(negative) flag... Glej dokumentacijo
+  // ce je A = 0 setamo Z
+  if (X == 0) Z = 1;
+  // ce je 7 bit A = 1 setamo N
+  if ((X & 0b10000000) > 0) N = 1;
 }
 
 
@@ -197,13 +208,9 @@ int16_t CPU::Execute(int32_t& Cycles, Memory& memory)
 
       case INS_LDA_INDX:
       {
-        uint8_t IndirectTargetAddLSB = IndirectX(Cycles, memory);
+        uint16_t AbsTargetAddressPlusX = IndirectX(Cycles, memory);
 
-        uint16_t IndirectTarget = (0x00 << 8 ) | IndirectTargetAddLSB;
-
-        uint16_t AbsTargetAddress = Read_Word_ZeroPage(Cycles, IndirectTarget, memory);
-
-        A = Read_Byte_ABS(Cycles, AbsTargetAddress, memory);
+        A = Read_Byte_ABS(Cycles, AbsTargetAddressPlusX, memory);
   
         LDASetStatus();
 
@@ -211,17 +218,73 @@ int16_t CPU::Execute(int32_t& Cycles, Memory& memory)
 
       case INS_LDA_INDY:
       {
-        uint8_t IndirectTargetAddLSB = IndirectY(Cycles, memory);
-
-        uint16_t IndirectTarget = (0x00 << 8 ) | IndirectTargetAddLSB;
-
-        uint16_t AbsTargetAddress = Read_Word_ZeroPage(Cycles, IndirectTarget, memory);
-
-        uint16_t AbsTargetAddressPlusY = AbsTargetAddress + Y;
+        uint16_t AbsTargetAddressPlusY = IndirectY(Cycles, memory);
 
         A = Read_Byte_ABS(Cycles, AbsTargetAddressPlusY, memory);
   
         LDASetStatus();
+
+      }break;
+
+      case INS_LDX_IM:
+      {
+        // na naslednji poziciji je shranjen data ki ga je potrebno nalozit v A
+        //uint8_t Value = Fetch_Byte(Cycles, memory);
+        //A = Value;
+
+        X = Immediate(Cycles, memory);
+
+        LDXSetStatus();
+
+      }break;
+
+      case INS_LDX_ZP:
+      {
+        // na naslednji poziciji je shranjen data ki ga je potrebno nalozit v A
+        //uint8_t ZeroPageAdress = Fetch_Byte(Cycles, memory);
+        // 3 clock cycle imamo ker rabi prebrat se kar je shranjeno na zero page addressu in ga dat v A
+        //A = Read_Byte(Cycles, ZeroPageAdress, memory);
+
+        X = ZeroPage(Cycles, memory);
+
+        LDXSetStatus();
+
+      }break;
+
+      case INS_LDX_ZPY:
+      {
+        // na naslednji poziciji je shranjen data kateremu pristejemo vrednost X in nalozimo v A
+        //uint8_t ZeroPageAdress = Fetch_Byte(Cycles, memory); 
+        // 4 clock cycle imamo ker rabi prebrat kar je shranjeno na zero page addressu in se pristet X
+        //ZeroPageAdress += X;
+
+        // Todo assert ce adress overflowa
+        //A = Read_Byte(Cycles, ZeroPageAdress, memory);
+        //Cycles--;
+
+        X = ZeroPageY(Cycles, memory);
+  
+        LDXSetStatus();
+
+      }break;
+
+      case INS_LDX_ABS:
+      {
+        uint16_t Abs_Address = Absolute(Cycles, memory);
+
+        X = Read_Byte_ABS(Cycles, Abs_Address, memory);
+  
+        LDXSetStatus();
+
+      }break;
+
+      case INS_LDX_ABSY:
+      {
+        uint16_t Abs_Address = AbsoluteY(Cycles, memory);
+
+        X = Read_Byte_ABS(Cycles, Abs_Address, memory);
+  
+        LDXSetStatus();
 
       }break;
 
@@ -371,27 +434,42 @@ uint16_t CPU::AbsoluteY(int32_t& Cycles, Memory& memory)
 }
 
 
-uint8_t CPU::IndirectX(int32_t& Cycles, Memory& memory)
+uint16_t CPU::IndirectX(int32_t& Cycles, Memory& memory)
 {
   // na naslednjem mestu je zeropage address kateremu je treba pristet X, in nato je na tem addressu LSB od target addressa
   uint8_t ZeroPageIndirectAdress = Fetch_Byte(Cycles, memory);
-  uint8_t ZeroPageIndirectAdressANDX = ZeroPageIndirectAdress + X;
+  uint8_t ZeroPageIndirectAdressPlusX = ZeroPageIndirectAdress + X;
+  //std::cout << "Vrednost zeropageadd + X : " << static_cast<int16_t>(ZeroPageIndirectAdressPlusX) << std::endl;
   Cycles--;
-  // TODO zeropage wrap around
+  // TODO zeropage wrap around, ta zero page wrap around je ze resen semizdi ker uporabljam uint8_t st
 
-  uint8_t TargetAddressLSB = Read_Byte(Cycles, ZeroPageIndirectAdressANDX, memory);
+  uint8_t IndirectTargetAddLSB = Read_Byte(Cycles, ZeroPageIndirectAdressPlusX, memory);
+
+  uint16_t IndirectTarget = IndirectTargetAddLSB;
+
+  uint16_t AbsTargetAddress = Read_Word_ZeroPage(Cycles, IndirectTarget, memory);
   
-  return TargetAddressLSB;
+  return AbsTargetAddress;
 }
 
-uint8_t CPU::IndirectY(int32_t& Cycles, Memory& memory)
+uint16_t CPU::IndirectY(int32_t& Cycles, Memory& memory)
 {
   // na naslednjem mestu je zeropage address kateremu je treba pristet X, in nato je na tem addressu LSB od target addressa
   uint8_t ZeroPageIndirectAdress = Fetch_Byte(Cycles, memory);
   // TODO zeropage wrap around
-  uint8_t TargetAddressLSB = Read_Byte(Cycles, ZeroPageIndirectAdress, memory);
+  uint8_t IndirectTargetAddLSB = Read_Byte(Cycles, ZeroPageIndirectAdress, memory);
+
+  uint16_t AbsTargetAddress = Read_Word_ZeroPage(Cycles, IndirectTargetAddLSB, memory);
+  std::cout << "Vrednost zeropageadd : " << AbsTargetAddress << std::endl;
+  uint16_t AbsTargetAddressPlusY = AbsTargetAddress + Y;
+  std::cout << "Vrednost zeropageadd + Y : " << AbsTargetAddressPlusY << std::endl;
+
+  if ((AbsTargetAddress & 0xFF00) != (AbsTargetAddressPlusY & 0xFF00))
+  {
+    Cycles--;
+  }
   
-  return TargetAddressLSB;
+  return AbsTargetAddressPlusY;
 }
 
 

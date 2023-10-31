@@ -39,6 +39,8 @@ struct CPU
   uint8_t N : 1;
 
   // opcodes
+
+  /*      Load A register instructions      */
   // instruction load acumulator imidiate mode
   // 1 byte opcode 2 byte je data ki ga hocemo loadat
   static constexpr uint8_t INS_LDA_IM = 0xA9;
@@ -58,6 +60,20 @@ struct CPU
   static constexpr uint8_t INS_LDA_INDX = 0xA1;
 
   static constexpr uint8_t INS_LDA_INDY = 0xB1;
+
+  /*      Load X register instructions      */
+  static constexpr uint8_t INS_LDX_IM = 0xA2;
+
+  static constexpr uint8_t INS_LDX_ZP = 0xA6;
+
+  static constexpr uint8_t INS_LDX_ZPY = 0xB6;
+
+  static constexpr uint8_t INS_LDX_ABS = 0xAE;
+
+  static constexpr uint8_t INS_LDX_ABSY = 0xBE;
+
+
+
   // instruction jump to subrutine absolute, pushes the address (minus one) of the return point on to the stack and then sets the program counter to the target memory address.
   // 1 byte opcode 2 byte je address kamor skocimo
   static constexpr uint8_t INS_JSR_ABS = 0x20;
@@ -74,7 +90,7 @@ struct CPU
 
   uint16_t Fetch_Word(int32_t& Cycles, Memory& memory);
 
-  uint16_t Read_Word_ZeroPage(int32_t& Cycles, uint16_t AbsAddress, Memory& memory);
+  uint16_t Read_Word_ZeroPage(int32_t& Cycles, uint8_t ZeroPageAddress, Memory& memory);
 
   void WriteWord(uint16_t Value, uint32_t Address, int32_t& Cycles, Memory& memory);
 
@@ -98,11 +114,12 @@ struct CPU
   
   uint16_t AbsoluteY(int32_t& Cycles, Memory& memory); 
 
-  uint8_t IndirectX(int32_t& Cycles, Memory& memory); 
+  uint16_t IndirectX(int32_t& Cycles, Memory& memory); 
   
-  uint8_t IndirectY(int32_t& Cycles, Memory& memory); 
+  uint16_t IndirectY(int32_t& Cycles, Memory& memory); 
 
 
   // Instruction functions 
   void LDASetStatus();
+  void LDXSetStatus();
 };
